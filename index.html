@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🎄 聖誕月曆 2025</title>
+<title>🎄 生日月曆 2025</title>
 <style>
 body{
   margin:0;
@@ -13,7 +13,10 @@ body{
   flex-direction:column;
   align-items:center;
   padding:2em 1em;
+  animation:fadeIn 1s ease forwards;
+  opacity:0;
 }
+@keyframes fadeIn{to{opacity:1}}
 h1{
   margin:0 0 0.5em 0;
   font-size:1.6em;
@@ -23,13 +26,17 @@ h1{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:8px;
-  max-width:520px;
   width:100%;
+  max-width:520px;
   background:#fff;
   padding:10px;
   border-radius:16px;
   box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  transition:transform .2s ease;
+  opacity:0;
+  animation:fadeUp .8s ease .2s forwards;
 }
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .weekday{
   text-align:center;
   font-weight:500;
@@ -37,7 +44,11 @@ h1{
   font-size:0.8em;
   padding-bottom:6px;
 }
+.weekend{
+  color:#d33;
+}
 .day{
+  width:100%;
   aspect-ratio:1/1;
   background:#fff;
   border-radius:12px;
@@ -73,6 +84,7 @@ h1{
   width:calc(100% - 40px);
   max-width:360px;
   text-align:center;
+  animation:fadeUp .3s ease;
 }
 .modal-box h2{
   margin:0 0 .5em;
@@ -104,10 +116,9 @@ button:active{
 </style>
 
 <body>
-<h1>🎅 聖誕月曆 2025 / 12</h1>
+<h1>🎅 生日月曆 2025 / 12</h1>
 <div id="calendarContainer"></div>
 
-<!-- modal -->
 <div id="modal">
   <div class="modal-box">
     <h2 id="mTitle"></h2>
@@ -117,22 +128,28 @@ button:active{
 </div>
 
 <script>
-const SECRET='20251221'; // 請改成自己的 token
+const SECRET='20251221'; // 上線前請改
 const gifts={
   1:'12/1 的禮物：今天笑一個 😊',
   2:'12/2 的禮物：喝杯熱可可 ☕️',
   3:'12/3 的禮物：稱讚自己一次 🌟',
   4:'12/4 的禮物：放鬆一下 🎧',
+  21:'🎂 生日大快樂 🎂',
   24:'平安夜快樂 🎁',
   25:'聖誕快樂 ❤️'
 };
 
-// 驗證 token
 const token=new URL(location.href).searchParams.get('token');
 if(token!==SECRET){
   document.body.innerHTML='<div class="deny">❌ 沒有正確 token，無法瀏覽此月曆。</div>';
 }else{
   buildCalendar();
+  // 修正初始格大小
+  window.addEventListener('load', ()=> {
+    const g=document.querySelector('.grid');
+    g.style.transform='scale(1.001)';
+    setTimeout(()=>g.style.transform='scale(1)',100);
+  });
 }
 
 function buildCalendar(){
@@ -142,40 +159,37 @@ function buildCalendar(){
   container.appendChild(grid);
 
   const weekdays=['日','一','二','三','四','五','六'];
-  for(const w of weekdays){
+  weekdays.forEach((w,i)=>{
     const wd=document.createElement('div');
-    wd.className='weekday';
+    wd.className='weekday'+(i===0||i===6?' weekend':'');
     wd.textContent=w;
     grid.appendChild(wd);
-  }
+  });
 
-  const y=2025,m=11; // 12月
+  const y=2025,m=11;
   const first=new Date(y,m,1);
   const days=new Date(y,m+1,0).getDate();
   const start=first.getDay();
 
-  // 空白填充
   for(let i=0;i<start;i++){
     const e=document.createElement('div');
     grid.appendChild(e);
   }
 
-  // 建立日期格
   for(let d=1;d<=days;d++){
     const cell=document.createElement('div');
-    cell.className='day';
+    const date=new Date(y,m,d);
+    const isWeekend=date.getDay()===0||date.getDay()===6;
+    cell.className='day'+(isWeekend?' weekend':'');
     cell.textContent=d;
     cell.onclick=()=>openGift(d);
     grid.appendChild(cell);
   }
 }
 
-// modal 控制
 function openGift(d){
-  const title=document.getElementById('mTitle');
-  const text=document.getElementById('mText');
-  title.textContent=`12/${d} 禮物`;
-  text.textContent=gifts[d]||'這天的禮物還沒設定 🎄';
+  document.getElementById('mTitle').textContent=`12/${d} 禮物`;
+  document.getElementById('mText').textContent=gifts[d]||'這天的禮物還沒設定 🎄';
   document.getElementById('modal').style.display='flex';
 }
 function closeModal(){
