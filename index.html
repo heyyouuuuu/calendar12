@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>聖誕倒數月曆 — 2025/12</title>
+<style>
+  :root{
+    --bg:#0b1b2b; --card:#0f2a44; --accent:#f2c94c;
+    --muted:#9fb3c8; --today:#7ee0a6;
+  }
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans TC","Helvetica Neue",Arial;}
+  body{background:linear-gradient(180deg,#071428 0%, #082033 60%); color: #eaf6ff; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .wrap{width:100%; max-width:920px; background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:12px; padding:20px; box-shadow:0 6px 30px rgba(2,8,23,0.6); border:1px solid rgba(255,255,255,0.03)}
+  header{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px}
+  h1{font-size:20px;margin:0}
+  .sub{color:var(--muted); font-size:13px}
+  .calendar{display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-top:14px}
+  .weekday{font-size:12px; text-align:center; color:var(--muted)}
+  .day{
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+    border-radius:8px; padding:14px; min-height:84px; display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start;
+    cursor:default; position:relative; border:1px solid rgba(255,255,255,0.03);
+  }
+  .day.locked{opacity:0.45}
+  .day.today{border:1px solid var(--today); box-shadow:0 4px 18px rgba(126,224,166,0.08); transform:translateY(-2px); cursor:pointer;}
+  .num{font-weight:700; font-size:18px; margin-bottom:8px}
+  .open-btn{margin-top:auto; align-self:stretch; text-align:center; padding:8px 10px; border-radius:6px; background:rgba(255,255,255,0.03); color:var(--accent); font-weight:600; font-size:13px; border:1px dashed rgba(255,255,255,0.03)}
+  .open-btn.disabled{opacity:0.4}
+  .footer{margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:12px; color:var(--muted); font-size:13px}
+  /* modal */
+  .modal-back{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(2,6,13,0.5), rgba(2,6,13,0.75)); z-index:40}
+  .modal{background:var(--card); padding:20px; border-radius:12px; width:calc(100% - 48px); max-width:520px; box-shadow:0 12px 50px rgba(2,8,23,0.7); border:1px solid rgba(255,255,255,0.04)}
+  .modal h2{margin:0 0 8px 0}
+  .modal p{margin:0 0 12px 0; color:var(--muted)}
+  .close{background:transparent; border:0; color:var(--accent); font-weight:700; cursor:pointer}
+  /* access denied */
+  .deny{display:flex; align-items:center; justify-content:center; padding:48px; text-align:center; gap:12px; flex-direction:column}
+  .small{font-size:13px; color:var(--muted)}
+  @media (max-width:640px){
+    .day{min-height:72px;padding:10px}
+    .num{font-size:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header>
+    <div>
+      <h1>聖誕倒數月曆 — 2025 / 12</h1>
+      <div class="sub">點開「今天」的日期來查看禮物。非當天無法開啟。</div>
+    </div>
+    <div class="sub" id="accessInfo">存取檢查中…</div>
+  </header>
+
+  <div id="contentArea">
+    <!-- 銀幕上會生成月曆 -->
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+      <div class="sub">語言：中文（繁體）</div>
+      <div class="sub">授權方式：網址 token</div>
+    </div>
+
+    <div style="margin-top:12px; display:grid; gap:8px;">
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:10px;">
+        <div class="weekday">日</div><div class="weekday">一</div><div class="weekday">二</div><div class="weekday">三</div><div class="weekday">四</div><div class="weekday">五</div><div class="weekday">六</div>
+      </div>
+      <div class="calendar" id="calendar"></div>
+    </div>
+
+    <div class="footer">
+      <div class="small">提示：你可以把 token 加在網址後（?token=...）給想要開的人。</div>
+      <div class="small">建議：上線前請自行更改程式內的 SECRET。</div>
+    </div>
+  </div>
+
+  <!-- access denied view (hidden by default) -->
+  <div id="denyView" style="display:none;">
+    <div class="deny">
+      <h2>存取被拒</h2>
+      <div class="small">需要正確的 token 才能檢視此月曆。請確認網址包含正確的 ?token=YOUR_SECRET</div>
+    </div>
+  </div>
+</div>
+
+<!-- modal -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2 id="modalTitle">禮物</h2>
+    <p id="modalDesc">內文</p>
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button class="close" id="closeBtn">關閉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  簡單使用說明：
+  - 將此檔上傳到靜態空間（或直接打開檔案測試）。
+  - 必須在網址帶 token，例如： index.html?token=SECRET_VALUE
+  - 在程式碼中修改 SECRET 與 gifts 內容以符合你的需求。
+*/
+
+// ========== 參數（上線前請改此 SECRET） ==========
+const SECRET = '20251221'; // <-- 改成自己的密鑰
+// 如果希望更不容易被猜到，請改成一串長字串
+// 範例： 'xY7!hb3-abc-2025-12'
+
+// 禮物描述：把每一天要顯示的內容放在這裡（以 1..31 的數字當 key ）
+// 你可以自行修改或擴充文字 / HTML（目前為純文字）
+const gifts = {
+  1: '小驚喜：聖誕帽貼圖乙張',
+  2: '溫馨小語：今天對自己說一句「你很棒」',
+  3: '小任務：做三分鐘伸展運動',
+  4: '甜點提示券：一杯熱可可抵用券（虛擬）',
+  5: '播放清單：推薦一首節日歌給你',
+  6: '暖心卡片：一段祝福文字',
+  7: '小遊戲：試著畫一顆聖誕樹',
+  8: 'DIY：今晚做簡單餅乾（食譜附註）',
+  9: '桌面背景：送你一張節日桌布（可下載）',
+ 10: '折扣券（模擬）：下次購物 5% 折扣',
+ 11: '影片推薦：一部適合聖誕的短片',
+ 12: '手寫提示：寫一封感謝卡給朋友',
+ 13: '放鬆練習：5 分鐘呼吸練習',
+ 14: '故事時間：一段短小的聖誕故事',
+ 15: '照片任務：拍一張今天讓你微笑的照片',
+ 16: '秘密天使：送給今天遇到的人一句好話',
+ 17: '節日小知識：聖誕老人的起源簡介',
+ 18: '手工：做一個簡單的禮物標籤',
+ 19: '音樂：推薦一首溫暖歌曲',
+ 20: '電影之夜建議：一部家庭電影清單',
+ 21: '夜間儀式：泡一杯熱茶放鬆一下',
+ 22: '回顧：寫下今年三件讓你感謝的事',
+ 23: '計劃：為明年設定一個小目標',
+ 24: '平安夜驚喜：特別祝福與小圖案',
+ 25: '聖誕快樂！今天的禮物：一張專屬祝福卡（祝你快樂）',
+ 26: '節後放鬆：建議今天好好休息',
+ 27: '回饋日：對一位朋友說「謝謝」',
+ 28: '整理小任務：清理一個小角落',
+ 29: '未來信：寫一段給未來自己的話',
+ 30: '攝影日：拍一張冬季主題照片',
+ 31: '跨年小提醒：準備明年日曆或計畫本'
+};
+
+// ========== 存取控制 ==========
+function getQueryParam(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+const token = getQueryParam('token') || '';
+const allowed = token === SECRET;
+
+// ========== 畫面控制 ==========
+const app = document.getElementById('app');
+const contentArea = document.getElementById('contentArea');
+const denyView = document.getElementById('denyView');
+const accessInfo = document.getElementById('accessInfo');
+
+if(!allowed){
+  // 顯示被拒畫面
+  contentArea.style.display = 'none';
+  denyView.style.display = 'block';
+  app.appendChild(denyView);
+  accessInfo.textContent = '存取：失敗';
+} else {
+  accessInfo.textContent = '存取：允許（已帶 token）';
+  buildCalendar();
+}
+
+// ========== 建月曆（2025/12） ==========
+function buildCalendar(){
+  const cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+
+  // 目標年月：2025 年 12 月
+  const year = 2025, month = 12; // month: 1..12
+  const first = new Date(year, month-1, 1);
+  const last = new Date(year, month, 0); // last day of month
+  const daysInMonth = last.getDate();
+
+  // 當地日期（使用使用者的本地時間作為「今天」判斷）
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth() + 1;
+  const todayDate = now.getDate();
+
+  // 計算第一天是星期幾（0 = 日 ... 6 = 六）
+  const startWeekday = first.getDay();
+
+  // 在日曆前補空格
+  for(let i=0;i<startWeekday;i++){
+    const empty = document.createElement('div');
+    empty.className = 'day locked';
+    empty.style.visibility = 'hidden';
+    cal.appendChild(empty);
+  }
+
+  // 產生每一天的格子
+  for(let d=1; d<=daysInMonth; d++){
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    const num = document.createElement('div');
+    num.className = 'num';
+    num.textContent = d;
+    cell.appendChild(num);
+
+    // 簡短提示（可自行修改）
+    const hint = document.createElement('div');
+    hint.style.fontSize='13px';
+    hint.style.color='var(--muted)';
+    hint.style.marginTop='4px';
+    hint.textContent = gifts[d] ? gifts[d].slice(0,28) + (gifts[d].length>28 ? '…' : '') : '';
+    cell.appendChild(hint);
+
+    // 判斷是否為當天（且為 2025/12）
+    const isToday = (todayYear === year && todayMonth === month && todayDate === d);
+
+    if(isToday){
+      cell.classList.add('today');
+      // 按鈕
+      const btn = document.createElement('div');
+      btn.className = 'open-btn';
+      btn.textContent = '開啟今天禮物 🎁';
+      btn.addEventListener('click', ()=> openGift(d));
+      cell.appendChild(btn);
+    } else {
+      cell.classList.add('locked');
+      const btn = document.createElement('div');
+      btn.className = 'open-btn disabled';
+      btn.textContent = '不可開啟';
+      // 點擊顯示提示：只能開今天
+      btn.addEventListener('click', ()=>{
+        const message = (new Date(year, month-1, d) < new Date(todayYear, todayMonth-1, todayDate)) ?
+          '只能開啟「今天」的日期，過去的日期無法開啟。' :
+          '只能開啟「今天」的日期，未來的日期無法開啟。';
+        alert(message);
+      });
+      cell.appendChild(btn);
+    }
+
+    // 加到日曆
+    cal.appendChild(cell);
+  }
+}
+
+// ========== modal 控制 ==========
+const modalBack = document.getElementById('modalBack');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const closeBtn = document.getElementById('closeBtn');
+
+function openGift(day){
+  // 只有在 allowed 且 確認是今天（為安全起見再檢查）
+  const now = new Date();
+  if(!(now.getFullYear()===2025 && (now.getMonth()+1)===12 && now.getDate()===day)){
+    alert('只能開啟今天的日期。');
+    return;
+  }
+  // 取得禮物文字
+  const text = gifts[day] || '今天的禮物尚未設定。';
+  modalTitle.textContent = `12/${String(day).padStart(2,'0')} 的禮物`;
+  modalDesc.textContent = text;
+  modalBack.style.display = 'flex';
+}
+
+closeBtn.addEventListener('click', ()=> { modalBack.style.display = 'none'; });
+
+// 點背景也可關閉
+modalBack.addEventListener('click', (e)=>{
+  if(e.target === modalBack) modalBack.style.display = 'none';
+});
+
+// 初始：如果現在不是 2025/12，所有格子都會是鎖定（使用者會看到不能開啟）
+(function showNoticeIfNotDec2025(){
+  const now = new Date();
+  if(!(now.getFullYear()===2025 && (now.getMonth()+1)===12)){
+    const info = document.createElement('div');
+    info.className = 'small';
+    info.style.marginTop='12px';
+    info.textContent = '注意：你的本機日期不是 2025/12（只有本月的「今天」可以開啟）。若要測試請把電腦日期改為 2025/12 。';
+    document.querySelector('.wrap').insertBefore(info, document.querySelector('.wrap').children[2]);
+  }
+})();
+</script>
+</body>
+</html>
