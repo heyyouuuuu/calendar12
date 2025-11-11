@@ -2,123 +2,131 @@
 <html lang="zh-Hant">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🎄 生日月曆 2025</title>
+<title>🎂 生日月曆 2025</title>
 <style>
+/* 背景與字體設定 */
 body{
   margin:0;
   font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans TC", sans-serif;
-  background:#f8f8f9;
-  color:#222;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:2em 1em;
-  animation:fadeIn 1s ease forwards;
-  opacity:0;
+  background:linear-gradient(to bottom right, #b30000, #ff6666);
+  color:#fff;
+  text-align:center;
+  padding:1.5em 0;
+  overflow-x:hidden;
 }
-@keyframes fadeIn{to{opacity:1}}
+
+/* 飄雪效果 */
+.snowflake {
+  position: fixed;
+  top: -10px;
+  color: #fff;
+  font-size: 1em;
+  opacity: 0.8;
+  animation: fall linear infinite;
+  pointer-events: none;
+}
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(100vh) rotate(360deg); }
+}
+
 h1{
-  margin:0 0 0.5em 0;
-  font-size:1.6em;
-  font-weight:600;
+  font-size:1.8em;
+  font-weight:700;
+  margin-bottom:0.5em;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
+
+/* 月曆容器 */
 .grid{
   display:grid;
   grid-template-columns:repeat(7,1fr);
-  gap:8px;
-  width:100%;
-  max-width:520px;
-  background:#fff;
+  gap:6px;
+  width:90vw;
+  max-width:480px;
+  background:rgba(255,255,255,0.15);
   padding:10px;
   border-radius:16px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
-  transition:transform .2s ease;
-  opacity:0;
-  animation:fadeUp .8s ease .2s forwards;
+  backdrop-filter:blur(6px);
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  margin:auto;
+  animation:fadeUp .8s ease;
 }
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+
 .weekday{
-  text-align:center;
-  font-weight:500;
-  color:#888;
   font-size:0.8em;
-  padding-bottom:6px;
+  color:#ffeaea;
+  font-weight:600;
 }
-.weekend{
-  color:#d33;
-}
+
 .day{
-  width:100%;
   aspect-ratio:1/1;
-  background:#fff;
-  border-radius:12px;
+  background:rgba(255,255,255,0.9);
+  border-radius:10px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-weight:500;
-  font-size:1em;
-  color:#111;
+  color:#b30000;
+  font-weight:600;
   cursor:pointer;
-  transition:all .15s ease;
-  border:1px solid #e8e8e8;
+  transition:transform 0.15s ease, background 0.15s ease;
 }
 .day:hover{
-  background:#007aff;
-  color:#fff;
   transform:scale(1.05);
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  background:#fff0f0;
 }
+
+/* 週末字體紅一點 */
+.weekend{
+  color:#ff3333;
+}
+
+/* 彈窗樣式 */
 #modal{
   position:fixed; inset:0;
-  background:rgba(0,0,0,0.45);
+  background:rgba(0,0,0,0.5);
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:50;
+  z-index:10;
 }
 .modal-box{
   background:#fff;
+  color:#222;
   border-radius:16px;
   padding:24px;
-  box-shadow:0 8px 30px rgba(0,0,0,0.2);
-  width:calc(100% - 40px);
-  max-width:360px;
+  max-width:80%;
   text-align:center;
+  box-shadow:0 6px 20px rgba(0,0,0,0.4);
   animation:fadeUp .3s ease;
 }
-.modal-box h2{
-  margin:0 0 .5em;
-  font-size:1.2em;
-}
-.modal-box p{
-  color:#333;
-  margin-bottom:1.2em;
-  line-height:1.4em;
-}
+.modal-box h2{margin-top:0;color:#b30000;}
+.modal-box p{margin:0.5em 0 1.2em;}
 button{
-  background:#007aff;
+  background:#b30000;
   color:#fff;
   border:0;
   padding:8px 18px;
   border-radius:8px;
-  font-weight:500;
   font-size:0.9em;
+  font-weight:600;
 }
-button:active{
-  background:#005bb5;
-}
+button:active{background:#800000;}
+
 .deny{
-  margin-top:4em;
-  color:#666;
+  margin-top:5em;
+  color:#fff;
   font-size:1em;
   text-align:center;
 }
 </style>
 
 <body>
-<h1>🎅 生日月曆 2025 / 12</h1>
+<h1>🎂 生日月曆 (2025/12)</h1>
 <div id="calendarContainer"></div>
 
+<!-- 彈窗 -->
 <div id="modal">
   <div class="modal-box">
     <h2 id="mTitle"></h2>
@@ -128,15 +136,27 @@ button:active{
 </div>
 
 <script>
-const SECRET='20251221'; // 上線前請改
+// ===== 飄雪效果 =====
+const snowCount = 25;
+for (let i = 0; i < snowCount; i++) {
+  const snow = document.createElement('div');
+  snow.className = 'snowflake';
+  snow.textContent = '❄️';
+  snow.style.left = Math.random() * 100 + 'vw';
+  snow.style.animationDuration = 5 + Math.random() * 5 + 's';
+  snow.style.fontSize = 10 + Math.random() * 14 + 'px';
+  snow.style.opacity = 0.5 + Math.random() * 0.5;
+  document.body.appendChild(snow);
+}
+
+// ===== 主程式 =====
+const SECRET='20251221'; // 設定專屬 token
 const gifts={
-  1:'12/1 的禮物：今天笑一個 😊',
-  2:'12/2 的禮物：喝杯熱可可 ☕️',
-  3:'12/3 的禮物：稱讚自己一次 🌟',
-  4:'12/4 的禮物：放鬆一下 🎧',
-  21:'🎂 生日大快樂 🎂',
-  24:'平安夜快樂 🎁',
-  25:'聖誕快樂 ❤️'
+  1:'🎉 今天開始生日月！',
+  5:'🍰 想想今年想許的願望吧！',
+  12:'🎁 小驚喜：寫下3件讓你開心的事',
+  20:'🎈 距離生日越來越近囉～',
+  25:'🎂 生日快樂！祝你幸福滿滿 ❤️'
 };
 
 const token=new URL(location.href).searchParams.get('token');
@@ -144,12 +164,6 @@ if(token!==SECRET){
   document.body.innerHTML='<div class="deny">❌ 沒有正確 token，無法瀏覽此月曆。</div>';
 }else{
   buildCalendar();
-  // 修正初始格大小
-  window.addEventListener('load', ()=> {
-    const g=document.querySelector('.grid');
-    g.style.transform='scale(1.001)';
-    setTimeout(()=>g.style.transform='scale(1)',100);
-  });
 }
 
 function buildCalendar(){
@@ -189,7 +203,7 @@ function buildCalendar(){
 
 function openGift(d){
   document.getElementById('mTitle').textContent=`12/${d} 禮物`;
-  document.getElementById('mText').textContent=gifts[d]||'這天的禮物還沒設定 🎄';
+  document.getElementById('mText').textContent=gifts[d]||'這天還沒有特別的活動 🎄';
   document.getElementById('modal').style.display='flex';
 }
 function closeModal(){
