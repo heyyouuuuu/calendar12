@@ -1,202 +1,125 @@
 <!doctype html>
 <html lang="zh-Hant">
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🎁 禮物編輯器</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🎁 編輯 Gifts</title>
 <style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
-  margin: 0;
-  padding: 20px;
-  background: #faf3e0;
-  color: #333;
-  text-align: center;
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Noto Sans TC",sans-serif;
+  margin:20px;
+  background:#fafafa;
 }
-
-h1 {
-  margin-bottom: 10px;
+h1{font-size:1.4em;margin-bottom:10px;}
+textarea{
+  width:100%;
+  height:300px;
+  font-size:14px;
+  font-family:monospace;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
 }
-
-#calendar {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin: 20px auto;
-  max-width: 500px;
+input{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:14px;
 }
-
-.day, .weekday {
-  padding: 10px;
-  border-radius: 6px;
+button{
+  padding:10px 16px;
+  border:0;
+  background:#d10000;
+  color:#fff;
+  font-size:14px;
+  border-radius:8px;
+  margin-top:10px;
 }
-
-.weekday {
-  font-weight: bold;
-  background: #ddd;
-}
-
-.day {
-  background: #fff;
-  border: 1px solid #ccc;
-  cursor: pointer;
-}
-
-.day:hover {
-  background: #f0f0f0;
-}
-
-.selected {
-  border: 2px solid #ff5757 !important;
-}
-
-#editorBox {
-  margin-top: 20px;
-  display: none;
-}
-
-textarea {
-  width: 90%;
-  max-width: 500px;
-  height: 120px;
-  padding: 10px;
-  font-size: 1em;
-}
-
-button {
-  padding: 10px 18px;
-  border: 0;
-  border-radius: 6px;
-  font-size: 1em;
-  cursor: pointer;
-  margin: 10px 5px;
-}
-
-#saveBtn {
-  background: #ff5757;
-  color: #fff;
-}
-
-#exportBtn {
-  background: #4caf50;
-  color: #fff;
-}
-
-#outputBox {
-  margin-top: 20px;
-  display: none;
-}
-
-pre {
-  background: #333;
-  color: #fff;
-  padding: 12px;
-  border-radius: 6px;
-  overflow-x: auto;
-  text-align: left;
+#msg{
+  margin-top:10px;
+  font-size:14px;
+  color:green;
 }
 </style>
 
 <body>
+<h1>🎁 Gifts 編輯器</h1>
 
-<h1>🎁 禮物內容編輯器</h1>
-<p>點選日期 → 編輯禮物 → 匯出 JSON → 貼回 GitHub gifts.json</p>
+<p>你的 GitHub Token：</p>
+<input id="tokenInput" placeholder="第一次使用請輸入 GitHub Token">
 
-<div id="calendar"></div>
+<button onclick="saveToken()">儲存 Token（只存 localStorage）</button>
 
-<div id="editorBox">
-  <h2 id="editTitle"></h2>
-  <textarea id="giftText"></textarea>
-  <br>
-  <button id="saveBtn">儲存內容</button>
-  <button id="exportBtn">匯出 JSON</button>
-</div>
+<p>gifts.json內容：</p>
+<textarea id="editor"></textarea>
 
-<div id="outputBox">
-  <h3>匯出的 gifts.json</h3>
-  <pre id="jsonOutput"></pre>
-</div>
+<button onclick="upload()">💾 儲存到 GitHub</button>
+
+<div id="msg"></div>
 
 <script>
-// ========== 讀取 gifts.json ==========
-let gifts = {};
+const USER = "heyyouuuuu";
+const REPO = "calendar12";
+const FILE_PATH = "gifts.json";
 
-fetch("gifts.json")
-  .then(res => res.json())
-  .then(data => {
-    gifts = data;
-    buildCalendar();
-  })
-  .catch(err => {
-    alert("⚠️ 無法載入 gifts.json，請確認檔案存在於同資料夾");
-    console.error(err);
-  });
+let token = localStorage.getItem("gh_token");
 
-// ========== 建立月曆 ==========
-function buildCalendar() {
-  const cal = document.getElementById("calendar");
-  cal.innerHTML = "";
+document.getElementById("tokenInput").value = token || "";
 
-  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
-  weekdays.forEach(w => {
-    const wd = document.createElement("div");
-    wd.className = "weekday";
-    wd.textContent = w;
-    cal.appendChild(wd);
-  });
-
-  const y = 2025, m = 11;
-  const first = new Date(y, m, 1);
-  const days = new Date(y, m + 1, 0).getDate();
-  const start = first.getDay();
-
-  for (let i = 0; i < start; i++) {
-    cal.appendChild(document.createElement("div"));
-  }
-
-  for (let d = 1; d <= days; d++) {
-    const cell = document.createElement("div");
-    cell.className = "day";
-    cell.textContent = d;
-    cell.onclick = () => selectDay(d);
-
-    cal.appendChild(cell);
-  }
+// 儲存 Token
+function saveToken(){
+  const v = document.getElementById("tokenInput").value.trim();
+  if(!v){ alert("Token 不可為空"); return; }
+  localStorage.setItem("gh_token", v);
+  token = v;
+  alert("Token 已保存！");
 }
 
-let currentDay = null;
-
-// ========== 點選日期 ==========
-function selectDay(d) {
-  currentDay = d;
-
-  document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
-  document.querySelectorAll(".day")[d - 1].classList.add("selected");
-
-  document.getElementById("editorBox").style.display = "block";
-  document.getElementById("editTitle").textContent = `編輯 12/${d} 禮物內容`;
-
-  document.getElementById("giftText").value = gifts[d] || "";
+// STEP 1：讀取現有 gifts.json
+async function loadFile(){
+  const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const content = atob(data.content);
+  document.getElementById("editor").value = content;
 }
+loadFile();
 
-// ========== 儲存 ==========
-document.getElementById("saveBtn").onclick = function () {
-  if (!currentDay) return;
+// STEP 2：寫回 GitHub
+async function upload(){
+  if(!token){
+    alert("請先輸入並儲存 Token");
+    return;
+  }
 
-  const val = document.getElementById("giftText").value.trim();
-  if (val) gifts[currentDay] = val;
-  else delete gifts[currentDay];
+  const newContent = document.getElementById("editor").value;
 
-  alert("已儲存！");
-};
+  // 先取最新 SHA
+  const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`;
+  const fileInfo = await fetch(url).then(r=>r.json());
 
-// ========== 匯出 JSON ==========
-document.getElementById("exportBtn").onclick = function () {
-  const output = JSON.stringify(gifts, null, 2);
-  document.getElementById("jsonOutput").textContent = output;
-  document.getElementById("outputBox").style.display = "block";
-};
+  const body = {
+    message: "update gifts.json",
+    content: btoa(unescape(encodeURIComponent(newContent))),
+    sha: fileInfo.sha
+  };
+
+  const res = await fetch(url, {
+    method:"PUT",
+    headers:{
+      "Authorization":"Bearer " + token,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if(res.ok){
+    document.getElementById("msg").innerHTML = "✔ 已成功更新！";
+  }else{
+    document.getElementById("msg").innerHTML = "❌ 發生錯誤，請檢查 Token 或權限。";
+  }
+}
 </script>
-
 </body>
 </html>
