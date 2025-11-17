@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎁 禮物編輯器</title>
+
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #faf3e0;
+  color: #333;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin: 20px auto;
+  max-width: 500px;
+}
+
+.day, .weekday {
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.weekday {
+  font-weight: bold;
+  background: #ddd;
+}
+
+.day {
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.day:hover {
+  background: #f0f0f0;
+}
+
+.selected {
+  border: 2px solid #ff5757 !important;
+}
+
+#editorBox {
+  margin-top: 20px;
+  display: none;
+}
+
+textarea {
+  width: 90%;
+  max-width: 500px;
+  height: 120px;
+  padding: 10px;
+  font-size: 1em;
+}
+
+button {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 1em;
+  cursor: pointer;
+  margin: 10px 5px;
+}
+
+#saveBtn {
+  background: #ff5757;
+  color: #fff;
+}
+
+#exportBtn {
+  background: #4caf50;
+  color: #fff;
+}
+
+#outputBox {
+  margin-top: 20px;
+  display: none;
+}
+
+pre {
+  background: #333;
+  color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  text-align: left;
+}
+</style>
+
+<body>
+
+<h1>🎁 禮物內容編輯器</h1>
+<p>點選日期 → 編輯禮物 → 匯出 JSON → 貼回 GitHub gifts.json</p>
+
+<div id="calendar"></div>
+
+<div id="editorBox">
+  <h2 id="editTitle"></h2>
+  <textarea id="giftText"></textarea>
+  <br>
+  <button id="saveBtn">儲存內容</button>
+  <button id="exportBtn">匯出 JSON</button>
+</div>
+
+<div id="outputBox">
+  <h3>匯出的 gifts.json</h3>
+  <pre id="jsonOutput"></pre>
+</div>
+
+<script>
+// ========== 讀取 gifts.json ==========
+let gifts = {};
+
+fetch("gifts.json")
+  .then(res => res.json())
+  .then(data => {
+    gifts = data;
+    buildCalendar();
+  })
+  .catch(err => {
+    alert("⚠️ 無法載入 gifts.json，請確認檔案存在於同資料夾");
+    console.error(err);
+  });
+
+// ========== 建立月曆 ==========
+function buildCalendar() {
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+
+  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+  weekdays.forEach(w => {
+    const wd = document.createElement("div");
+    wd.className = "weekday";
+    wd.textContent = w;
+    cal.appendChild(wd);
+  });
+
+  const y = 2025, m = 11;
+  const first = new Date(y, m, 1);
+  const days = new Date(y, m + 1, 0).getDate();
+  const start = first.getDay();
+
+  for (let i = 0; i < start; i++) {
+    cal.appendChild(document.createElement("div"));
+  }
+
+  for (let d = 1; d <= days; d++) {
+    const cell = document.createElement("div");
+    cell.className = "day";
+    cell.textContent = d;
+    cell.onclick = () => selectDay(d);
+
+    cal.appendChild(cell);
+  }
+}
+
+let currentDay = null;
+
+// ========== 點選日期 ==========
+function selectDay(d) {
+  currentDay = d;
+
+  document.querySelectorAll(".day").forEach(el => el.classList.remove("selected"));
+  document.querySelectorAll(".day")[d - 1].classList.add("selected");
+
+  document.getElementById("editorBox").style.display = "block";
+  document.getElementById("editTitle").textContent = `編輯 12/${d} 禮物內容`;
+
+  document.getElementById("giftText").value = gifts[d] || "";
+}
+
+// ========== 儲存 ==========
+document.getElementById("saveBtn").onclick = function () {
+  if (!currentDay) return;
+
+  const val = document.getElementById("giftText").value.trim();
+  if (val) gifts[currentDay] = val;
+  else delete gifts[currentDay];
+
+  alert("已儲存！");
+};
+
+// ========== 匯出 JSON ==========
+document.getElementById("exportBtn").onclick = function () {
+  const output = JSON.stringify(gifts, null, 2);
+  document.getElementById("jsonOutput").textContent = output;
+  document.getElementById("outputBox").style.display = "block";
+};
+</script>
+
+</body>
+</html>
