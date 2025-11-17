@@ -156,47 +156,61 @@ if(token!==SECRET){
 }
 
 /* 建立月曆 */
-function buildCalendar(){
-  const container=document.getElementById("calendarContainer");
-  container.innerHTML=''; // 清空舊內容
-  const grid=document.createElement("div");
-  grid.className="grid";
+function buildCalendar() {
+  const container = document.getElementById("calendarContainer");
+  container.innerHTML = ''; // 清空舊內容
+  const grid = document.createElement("div");
+  grid.className = "grid";
   container.appendChild(grid);
 
-  const weekdays=["日","一","二","三","四","五","六"];
+  const weekdays = ["日","一","二","三","四","五","六"];
   weekdays.forEach((w,i)=>{
-    const e=document.createElement("div");
-    e.className="weekday"+((i===0||i===6)?' weekend':'');
-    e.textContent=w;
+    const e = document.createElement("div");
+    e.className = "weekday" + ((i===0||i===6)?' weekend':'');
+    e.textContent = w;
     grid.appendChild(e);
   });
 
-  const y=2025,m=11;
-  const first=new Date(y,m,1);
-  const days=new Date(y,m+1,0).getDate();
-  const start=first.getDay();
+  const y = 2025, m = 11; // 12月
+  const first = new Date(y, m, 1);
+  const days = new Date(y, m+1, 0).getDate();
+  const start = first.getDay();
 
   for(let i=0;i<start;i++) grid.appendChild(document.createElement("div"));
 
-  for(let d=1;d<=days;d++){
-    const cell=document.createElement("div");
-    const date=new Date(y,m,d);
+  const today = new Date();
+  const isDevMonth = today.getMonth() === 10; // 11月開發模式
+
+  for(let d=1; d<=days; d++){
+    const cell = document.createElement("div");
+    const date = new Date(y,m,d);
     cell.className="day";
     if(date.getDay()===0||date.getDay()===6) cell.classList.add("weekend");
-    cell.textContent=d;
-    cell.onclick=()=>openGift(d);
+
+    cell.textContent = d;
+
+    // ===== 點選條件 =====
+    if(isDevMonth || (date <= today)){ 
+      // 可以點
+      cell.onclick = () => openGift(d);
+    } else {
+      // 未到日期不可點
+      cell.style.opacity = 0.4;
+      cell.style.cursor = "default";
+    }
+
     grid.appendChild(cell);
   }
 }
 
 /* 彈窗 */
 function openGift(d){
-  document.getElementById("mTitle").textContent=`12/${d} 🎁`;
   const text = gifts[d] || "這天還沒有特別安排 🎉";
-// 將換行字元 \n 轉成 <br>，用 innerHTML 顯示
-document.getElementById("mText").innerHTML = text.replace(/\n/g, "<br>");
-  document.getElementById("modal").style.display="flex";
+  document.getElementById("mTitle").textContent = `12/${d} 🎁`;
+  document.getElementById("mText").innerHTML = text.replace(/\n/g, "<br>");
+  document.getElementById("modal").style.display = "flex";
 }
+
 function closeModal(){document.getElementById("modal").style.display="none";}
 </script>
 </body>
