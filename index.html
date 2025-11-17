@@ -6,19 +6,18 @@
 <title>🎂 生日月曆 2025</title>
 
 <style>
-/* ===== 背景：聖誕紅漸層 + 柔光 ===== */
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans TC", sans-serif;
-  background: linear-gradient(145deg, #8b0000, #ff3b3b);
-  color: white;
-  padding: 1.5em 0;
-  text-align: center;
-  overflow-x: hidden;
-  position: relative;
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Noto Sans TC",sans-serif;
+  background: linear-gradient(150deg,#8b0000,#ff4d4d);
+  color:#fff;
+  padding:1.5em 0;
+  text-align:center;
+  overflow-x:hidden;
+  position:relative;
 }
 
-/* ===== 飄雪效果 ===== */
+/* 飄雪 */
 .snowflake {
   position: fixed;
   top: -10px;
@@ -28,137 +27,93 @@ body {
   animation: fall linear infinite;
   pointer-events: none;
 }
-@keyframes fall {
-  0% { transform: translateY(0) rotate(0deg); }
-  100% { transform: translateY(100vh) rotate(360deg); }
+@keyframes fall {0%{transform:translateY(0) rotate(0deg);}100%{transform:translateY(100vh) rotate(360deg);}}
+
+h1{
+  font-size:1.9em;
+  font-weight:700;
+  margin-top:0.3em;
+  text-shadow:0 4px 10px rgba(0,0,0,0.35);
 }
 
-/* ===== 大標題 ===== */
-h1 {
-  font-size: 1.9em;
-  font-weight: 700;
-  margin-top: 0.3em;
-  text-shadow: 0px 4px 10px rgba(0,0,0,0.35);
+/* 月曆容器 */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  width:92vw;
+  max-width:420px;
+  margin:1.2em auto 0;
+  background:rgba(255,255,255,0.22);
+  padding:10px 12px;
+  border-radius:18px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 4px 22px rgba(0,0,0,0.35);
+  animation:fadeUp .7s ease-out;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+.weekday{
+  font-size:0.78em;
+  color:#ffeaea;
+  font-weight:600;
 }
 
-/* ===== 月曆容器（Apple Style） ===== */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-
-  width: 92vw;
-  max-width: 420px;
-  margin: 1.2em auto 0;
-
-  background: rgba(255,255,255,0.22);
-  padding: 10px 12px;
-  border-radius: 18px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 22px rgba(0,0,0,0.35);
-
-  animation: fadeUp .7s ease-out;
+.day{
+  background:white;
+  border-radius:12px;
+  aspect-ratio:1/1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1em;
+  font-weight:600;
+  color:#b30000;
+  cursor:pointer;
+  box-shadow:0 2px 5px rgba(0,0,0,0.15);
+  transition:transform .15s ease, box-shadow .15s ease;
 }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+.day:hover{
+  transform:scale(1.04);
+  box-shadow:0 3px 10px rgba(0,0,0,0.25);
 }
 
-/* ===== 週標題 ===== */
-.weekday {
-  font-size: 0.78em;
-  color: #ffeaea;
-  font-weight: 600;
+.weekend{color:#ff2b2b !important;}
+
+/* 彈窗 */
+#modal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:50;
 }
-
-/* ===== 一般日期 ===== */
-.day {
-  background: white;
-  border-radius: 12px;
-  aspect-ratio: 1/1;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 1em;
-  font-weight: 600;
-  color: #b30000;
-
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-
-  transition: transform .15s ease, box-shadow .15s ease;
+.modal-box{
+  background:white;
+  color:#333;
+  border-radius:18px;
+  padding:26px;
+  width:80%;
+  max-width:320px;
+  text-align:center;
+  box-shadow:0 8px 25px rgba(0,0,0,0.35);
+  animation:fadeUp .28s ease-out;
 }
-.day:hover {
-  transform: scale(1.04);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-}
+.modal-box h2{margin:0;color:#b30000;font-weight:700;}
+button{background:#b30000;border:none;padding:8px 20px;border-radius:8px;color:white;cursor:pointer;margin-top:10px;font-size:.9em;font-weight:600;}
+button:active{background:#800000;}
 
-/* ===== 周末更紅 ===== */
-.weekend {
-  color: #ff2b2b !important;
-}
-
-/* ===== 彈窗 ===== */
-#modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal-box {
-  background: white;
-  color: #333;
-  border-radius: 18px;
-  padding: 26px;
-  width: 80%;
-  max-width: 320px;
-  text-align: center;
-
-  box-shadow: 0 8px 25px rgba(0,0,0,0.35);
-  animation: fadeUp .28s ease-out;
-}
-
-.modal-box h2 {
-  margin: 0;
-  color: #b30000;
-  font-weight: 700;
-}
-
-button {
-  background: #b30000;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-  margin-top: 10px;
-  font-size: 0.9em;
-  font-weight: 600;
-}
-button:active {
-  background: #800000;
-}
-
-/* ===== Token 錯誤 ===== */
-.deny {
-  margin-top: 5em;
-  font-size: 1.1em;
-}
+/* Token錯誤提示 */
+.deny{margin-top:5em;font-size:1.1em;}
 </style>
 </head>
 
 <body>
-
 <h1>🎂 生日月曆（2025 / 12）</h1>
 <div id="calendarContainer"></div>
 
-<!-- ===== 彈窗 ===== -->
+<!-- 彈窗 -->
 <div id="modal">
   <div class="modal-box">
     <h2 id="mTitle"></h2>
@@ -168,89 +123,79 @@ button:active {
 </div>
 
 <script>
-/* ===== 飄雪 ===== */
-for (let i = 0; i < 30; i++) {
-  const snow = document.createElement('div');
-  snow.className = 'snowflake';
-  snow.textContent = '❄️';
-  snow.style.left = Math.random() * 100 + 'vw';
-  snow.style.animationDuration = 4 + Math.random() * 6 + 's';
-  snow.style.fontSize = (10 + Math.random() * 16) + 'px';
-  document.body.appendChild(snow);
+/* 飄雪效果 */
+for(let i=0;i<30;i++){
+  const s=document.createElement('div');
+  s.className='snowflake';
+  s.textContent='❄️';
+  s.style.left=Math.random()*100+'vw';
+  s.style.animationDuration=4+Math.random()*6+'s';
+  s.style.fontSize=(10+Math.random()*16)+'px';
+  document.body.appendChild(s);
 }
 
-/* ===== Token 與資料 ===== */
-const SECRET = "20251221";
-let gifts = {};
+/* ===== Token & gifts ===== */
+const SECRET="20251221";
 const token = new URL(location.href).searchParams.get("token");
+let gifts={};
 
-/* ===== 載入 gifts.json ===== */
-fetch("gifts.json")
-  .then(r => r.json())
-  .then(data => {
-    gifts = data;
-
-    if (token !== SECRET) {
-      document.body.innerHTML = '<div class="deny">❌ Token 錯誤，無法瀏覽</div>';
-    } else {
+/* 先檢查 token */
+if(token!==SECRET){
+  document.body.innerHTML='<div class="deny">❌ Token 錯誤，無法瀏覽</div>';
+} else {
+  fetch("gifts.json")
+    .then(r=>r.json())
+    .then(data=>{
+      gifts=data;
       buildCalendar();
-    }
-  })
-  .catch(err => console.error("讀取 gifts.json 錯誤", err));
+    })
+    .catch(err=>{
+      console.error("gifts.json 載入失敗",err);
+      document.body.innerHTML='<div class="deny">❌ gifts.json 載入失敗</div>';
+    });
+}
 
-/* ===== 建構月曆 ===== */
-function buildCalendar() {
-  const container = document.getElementById("calendarContainer");
-  const grid = document.createElement("div");
-  grid.className = "grid";
+/* 建立月曆 */
+function buildCalendar(){
+  const container=document.getElementById("calendarContainer");
+  container.innerHTML=''; // 清空舊內容
+  const grid=document.createElement("div");
+  grid.className="grid";
   container.appendChild(grid);
 
-  const weekdays = ["日","一","二","三","四","五","六"];
-  weekdays.forEach((w, i) => {
-    const e = document.createElement("div");
-    e.className = "weekday";
-    e.classList.add(i === 0 || i === 6 ? "weekend" : "");
-    e.textContent = w;
+  const weekdays=["日","一","二","三","四","五","六"];
+  weekdays.forEach((w,i)=>{
+    const e=document.createElement("div");
+    e.className="weekday"+((i===0||i===6)?' weekend':'');
+    e.textContent=w;
     grid.appendChild(e);
   });
 
-  const y = 2025, m = 11;
-  const first = new Date(y, m, 1);
-  const days = new Date(y, m + 1, 0).getDate();
-  const start = first.getDay();
+  const y=2025,m=11;
+  const first=new Date(y,m,1);
+  const days=new Date(y,m+1,0).getDate();
+  const start=first.getDay();
 
-  for (let i = 0; i < start; i++) {
-    grid.appendChild(document.createElement("div"));
-  }
+  for(let i=0;i<start;i++) grid.appendChild(document.createElement("div"));
 
-  for (let d = 1; d <= days; d++) {
-    const cell = document.createElement("div");
-    const date = new Date(y, m, d);
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-
-    cell.className = "day";
-    if (isWeekend) cell.classList.add("weekend");
-
-    cell.textContent = d;
-    cell.onclick = () => openGift(d);
-
+  for(let d=1;d<=days;d++){
+    const cell=document.createElement("div");
+    const date=new Date(y,m,d);
+    cell.className="day";
+    if(date.getDay()===0||date.getDay()===6) cell.classList.add("weekend");
+    cell.textContent=d;
+    cell.onclick=()=>openGift(d);
     grid.appendChild(cell);
   }
 }
 
-/* ===== 彈窗 ===== */
-function openGift(d) {
-  document.getElementById("mTitle").textContent = `12/${d} 🎁`;
-  document.getElementById("mText").textContent =
-    gifts[d] || "這天還沒有特別安排 🎉";
-
-  document.getElementById("modal").style.display = "flex";
+/* 彈窗 */
+function openGift(d){
+  document.getElementById("mTitle").textContent=`12/${d} 🎁`;
+  document.getElementById("mText").textContent=gifts[d]||"這天還沒有特別安排 🎉";
+  document.getElementById("modal").style.display="flex";
 }
-
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
-}
+function closeModal(){document.getElementById("modal").style.display="none";}
 </script>
-
 </body>
 </html>
