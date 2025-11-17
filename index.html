@@ -1,27 +1,30 @@
 <!doctype html>
 <html lang="zh-Hant">
+<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>🎂 生日月曆 2025</title>
+
 <style>
-/* 背景與字體設定 */
-body{
-  margin:0;
-  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans TC", sans-serif;
-  background:linear-gradient(to bottom right, #b30000, #ff6666);
-  color:#fff;
-  text-align:center;
-  padding:1.5em 0;
-  overflow-x:hidden;
+/* ===== 背景：聖誕紅漸層 + 柔光 ===== */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans TC", sans-serif;
+  background: linear-gradient(145deg, #8b0000, #ff3b3b);
+  color: white;
+  padding: 1.5em 0;
+  text-align: center;
+  overflow-x: hidden;
+  position: relative;
 }
 
-/* 飄雪效果 */
+/* ===== 飄雪效果 ===== */
 .snowflake {
   position: fixed;
   top: -10px;
-  color: #fff;
+  color: rgba(255,255,255,0.9);
   font-size: 1em;
-  opacity: 0.8;
+  opacity: 0.9;
   animation: fall linear infinite;
   pointer-events: none;
 }
@@ -30,103 +33,132 @@ body{
   100% { transform: translateY(100vh) rotate(360deg); }
 }
 
-h1{
-  font-size:1.8em;
-  font-weight:700;
-  margin-bottom:0.5em;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+/* ===== 大標題 ===== */
+h1 {
+  font-size: 1.9em;
+  font-weight: 700;
+  margin-top: 0.3em;
+  text-shadow: 0px 4px 10px rgba(0,0,0,0.35);
 }
 
-/* 月曆容器 */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:6px;
-  width:90vw;
-  max-width:480px;
-  background:rgba(255,255,255,0.15);
-  padding:10px;
-  border-radius:16px;
-  backdrop-filter:blur(6px);
-  box-shadow:0 4px 20px rgba(0,0,0,0.3);
-  margin:auto;
-  animation:fadeUp .8s ease;
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+/* ===== 月曆容器（Apple Style） ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
 
-.weekday{
-  font-size:0.8em;
-  color:#ffeaea;
-  font-weight:600;
-}
+  width: 92vw;
+  max-width: 420px;
+  margin: 1.2em auto 0;
 
-.day{
-  aspect-ratio:1/1;
-  background:rgba(255,255,255,0.9);
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#b30000;
-  font-weight:600;
-  cursor:pointer;
-  transition:transform 0.15s ease, background 0.15s ease;
+  background: rgba(255,255,255,0.22);
+  padding: 10px 12px;
+  border-radius: 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 22px rgba(0,0,0,0.35);
+
+  animation: fadeUp .7s ease-out;
 }
-.day:hover{
-  transform:scale(1.05);
-  background:#fff0f0;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 週末字體紅一點 */
-.weekend{
-  color:#ff3333;
+/* ===== 週標題 ===== */
+.weekday {
+  font-size: 0.78em;
+  color: #ffeaea;
+  font-weight: 600;
 }
 
-/* 彈窗樣式 */
-#modal{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,0.5);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:10;
-}
-.modal-box{
-  background:#fff;
-  color:#222;
-  border-radius:16px;
-  padding:24px;
-  max-width:80%;
-  text-align:center;
-  box-shadow:0 6px 20px rgba(0,0,0,0.4);
-  animation:fadeUp .3s ease;
-}
-.modal-box h2{margin-top:0;color:#b30000;}
-.modal-box p{margin:0.5em 0 1.2em;}
-button{
-  background:#b30000;
-  color:#fff;
-  border:0;
-  padding:8px 18px;
-  border-radius:8px;
-  font-size:0.9em;
-  font-weight:600;
-}
-button:active{background:#800000;}
+/* ===== 一般日期 ===== */
+.day {
+  background: white;
+  border-radius: 12px;
+  aspect-ratio: 1/1;
 
-.deny{
-  margin-top:5em;
-  color:#fff;
-  font-size:1em;
-  text-align:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1em;
+  font-weight: 600;
+  color: #b30000;
+
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.day:hover {
+  transform: scale(1.04);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+
+/* ===== 周末更紅 ===== */
+.weekend {
+  color: #ff2b2b !important;
+}
+
+/* ===== 彈窗 ===== */
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-box {
+  background: white;
+  color: #333;
+  border-radius: 18px;
+  padding: 26px;
+  width: 80%;
+  max-width: 320px;
+  text-align: center;
+
+  box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+  animation: fadeUp .28s ease-out;
+}
+
+.modal-box h2 {
+  margin: 0;
+  color: #b30000;
+  font-weight: 700;
+}
+
+button {
+  background: #b30000;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+button:active {
+  background: #800000;
+}
+
+/* ===== Token 錯誤 ===== */
+.deny {
+  margin-top: 5em;
+  font-size: 1.1em;
 }
 </style>
+</head>
 
 <body>
-<h1>🎂 生日月曆 (2025/12)</h1>
+
+<h1>🎂 生日月曆（2025 / 12）</h1>
 <div id="calendarContainer"></div>
 
-<!-- 彈窗 -->
+<!-- ===== 彈窗 ===== -->
 <div id="modal">
   <div class="modal-box">
     <h2 id="mTitle"></h2>
@@ -136,87 +168,89 @@ button:active{background:#800000;}
 </div>
 
 <script>
-// ===== 飄雪效果 =====
-const snowCount = 25;
-for (let i = 0; i < snowCount; i++) {
+/* ===== 飄雪 ===== */
+for (let i = 0; i < 30; i++) {
   const snow = document.createElement('div');
   snow.className = 'snowflake';
   snow.textContent = '❄️';
   snow.style.left = Math.random() * 100 + 'vw';
-  snow.style.animationDuration = 5 + Math.random() * 5 + 's';
-  snow.style.fontSize = 10 + Math.random() * 14 + 'px';
-  snow.style.opacity = 0.5 + Math.random() * 0.5;
+  snow.style.animationDuration = 4 + Math.random() * 6 + 's';
+  snow.style.fontSize = (10 + Math.random() * 16) + 'px';
   document.body.appendChild(snow);
 }
 
-// ===== 主程式 =====
-const SECRET='20251221'; // 設定專屬 token
+/* ===== Token 與資料 ===== */
+const SECRET = "20251221";
 let gifts = {};
+const token = new URL(location.href).searchParams.get("token");
 
+/* ===== 載入 gifts.json ===== */
 fetch("gifts.json")
-  .then(res => res.json())
+  .then(r => r.json())
   .then(data => {
     gifts = data;
+
     if (token !== SECRET) {
-      document.body.innerHTML='<div class="deny">❌ 沒有正確 token，無法瀏覽此月曆。</div>';
+      document.body.innerHTML = '<div class="deny">❌ Token 錯誤，無法瀏覽</div>';
     } else {
-      buildCalendar(); 
+      buildCalendar();
     }
   })
-  .catch(err => {
-    console.error("gifts.json 載入失敗", err);
-  });
+  .catch(err => console.error("讀取 gifts.json 錯誤", err));
 
-const token=new URL(location.href).searchParams.get('token');
-if(token!==SECRET){
-  document.body.innerHTML='<div class="deny">❌ 沒有正確 token，無法瀏覽此月曆。</div>';
-}else{
-  buildCalendar();
-}
-
-function buildCalendar(){
-  const container=document.getElementById('calendarContainer');
-  const grid=document.createElement('div');
-  grid.className='grid';
+/* ===== 建構月曆 ===== */
+function buildCalendar() {
+  const container = document.getElementById("calendarContainer");
+  const grid = document.createElement("div");
+  grid.className = "grid";
   container.appendChild(grid);
 
-  const weekdays=['日','一','二','三','四','五','六'];
-  weekdays.forEach((w,i)=>{
-    const wd=document.createElement('div');
-    wd.className='weekday'+(i===0||i===6?' weekend':'');
-    wd.textContent=w;
-    grid.appendChild(wd);
+  const weekdays = ["日","一","二","三","四","五","六"];
+  weekdays.forEach((w, i) => {
+    const e = document.createElement("div");
+    e.className = "weekday";
+    e.classList.add(i === 0 || i === 6 ? "weekend" : "");
+    e.textContent = w;
+    grid.appendChild(e);
   });
 
-  const y=2025,m=11;
-  const first=new Date(y,m,1);
-  const days=new Date(y,m+1,0).getDate();
-  const start=first.getDay();
+  const y = 2025, m = 11;
+  const first = new Date(y, m, 1);
+  const days = new Date(y, m + 1, 0).getDate();
+  const start = first.getDay();
 
-  for(let i=0;i<start;i++){
-    const e=document.createElement('div');
-    grid.appendChild(e);
+  for (let i = 0; i < start; i++) {
+    grid.appendChild(document.createElement("div"));
   }
 
-  for(let d=1;d<=days;d++){
-    const cell=document.createElement('div');
-    const date=new Date(y,m,d);
-    const isWeekend=date.getDay()===0||date.getDay()===6;
-    cell.className='day'+(isWeekend?' weekend':'');
-    cell.textContent=d;
-    cell.onclick=()=>openGift(d);
+  for (let d = 1; d <= days; d++) {
+    const cell = document.createElement("div");
+    const date = new Date(y, m, d);
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+    cell.className = "day";
+    if (isWeekend) cell.classList.add("weekend");
+
+    cell.textContent = d;
+    cell.onclick = () => openGift(d);
+
     grid.appendChild(cell);
   }
 }
 
-function openGift(d){
-  document.getElementById('mTitle').textContent=`12/${d} 禮物`;
-  document.getElementById('mText').textContent=gifts[d]||'這天還沒有特別的活動 🎄';
-  document.getElementById('modal').style.display='flex';
+/* ===== 彈窗 ===== */
+function openGift(d) {
+  document.getElementById("mTitle").textContent = `12/${d} 🎁`;
+  document.getElementById("mText").textContent =
+    gifts[d] || "這天還沒有特別安排 🎉";
+
+  document.getElementById("modal").style.display = "flex";
 }
-function closeModal(){
-  document.getElementById('modal').style.display='none';
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
 }
 </script>
+
 </body>
 </html>
