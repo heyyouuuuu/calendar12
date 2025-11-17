@@ -192,7 +192,9 @@ function buildCalendar(){
 /* 彈窗 */
 function openGift(d){
   document.getElementById("mTitle").textContent=`12/${d} 🎁`;
-  document.getElementById("mText").textContent=gifts[d]||"這天還沒有特別安排 🎉";
+  const text = gifts[d] || "這天還沒有特別安排 🎉";
+// 將換行字元 \n 轉成 <br>，用 innerHTML 顯示
+document.getElementById("mText").innerHTML = text.replace(/\n/g, "<br>");
   document.getElementById("modal").style.display="flex";
 }
 function closeModal(){document.getElementById("modal").style.display="none";}
