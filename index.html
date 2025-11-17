@@ -151,13 +151,21 @@ for (let i = 0; i < snowCount; i++) {
 
 // ===== 主程式 =====
 const SECRET='20251221'; // 設定專屬 token
-const gifts={
-  1:'🎉 今天開始生日月！',
-  5:'🍰 想想今年想許的願望吧！',
-  12:'🎁 小驚喜：寫下3件讓你開心的事',
-  20:'🎈 距離生日越來越近囉～',
-  25:'🎂 生日快樂！祝你幸福滿滿 ❤️'
-};
+let gifts = {};
+
+fetch("gifts.json")
+  .then(res => res.json())
+  .then(data => {
+    gifts = data;
+    if (token !== SECRET) {
+      document.body.innerHTML='<div class="deny">❌ 沒有正確 token，無法瀏覽此月曆。</div>';
+    } else {
+      buildCalendar(); 
+    }
+  })
+  .catch(err => {
+    console.error("gifts.json 載入失敗", err);
+  });
 
 const token=new URL(location.href).searchParams.get('token');
 if(token!==SECRET){
