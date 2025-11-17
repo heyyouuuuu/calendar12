@@ -190,7 +190,7 @@ function buildCalendar() {
     cell.textContent = d;
 
     // ===== 點選條件 =====
-    if(isDevMonth ||（date <= today)){ 
+    if(isDevMonth || (date <= today)){ 
       // 可以點
       cell.onclick = () => openGift(d);
     } else {
