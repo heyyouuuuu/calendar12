@@ -2,31 +2,48 @@
 <html lang="zh-Hant">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🎁 編輯 Gifts</title>
+<title>🎁 編輯禮物 (可視化版)</title>
+
 <style>
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Noto Sans TC",sans-serif;
-  margin:20px;
-  background:#fafafa;
+  background:#f6f7f9;
+  margin:0; padding:20px;
 }
-h1{font-size:1.4em;margin-bottom:10px;}
-textarea{
+
+h1{
+  font-size:1.5em;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:20px;
+  color:#b30000;
+}
+
+/* 卡片外觀 */
+.card{
+  background:#fff;
+  padding:15px;
+  margin-bottom:15px;
+  border-radius:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+label{
+  font-size:0.9em;
+  font-weight:600;
+  display:block;
+  margin-bottom:4px;
+}
+
+input, textarea, select{
   width:100%;
-  height:300px;
-  font-size:14px;
-  font-family:monospace;
   padding:10px;
-  border-radius:8px;
+  margin-bottom:10px;
   border:1px solid #ccc;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
+  border-radius:10px;
   font-size:14px;
 }
+
 button{
   padding:10px 16px;
   border:0;
@@ -34,70 +51,186 @@ button{
   color:#fff;
   font-size:14px;
   border-radius:8px;
-  margin-top:10px;
+  cursor:pointer;
 }
+
+.btn-small{
+  padding:6px 10px;
+  font-size:12px;
+}
+
+.btn-delete{
+  background:#777;
+}
+
+#giftList .gift-item{
+  background:#fff;
+  padding:12px;
+  border:1px solid #eee;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
 #msg{
   margin-top:10px;
   font-size:14px;
   color:green;
+  text-align:center;
 }
 </style>
 
+
 <body>
-<h1>🎁 Gifts 編輯器</h1>
 
-<p>你的 GitHub Token：</p>
-<input id="tokenInput" placeholder="第一次使用請輸入 GitHub Token">
+<h1>🎁 生日禮物編輯器（視覺化）</h1>
 
-<button onclick="saveToken()">儲存 Token（只存 localStorage）</button>
+<div class="card">
+  <label>你的 GitHub Token</label>
+  <input id="tokenBox" type="password" placeholder="第一次使用請輸入 Token">
+  <button onclick="saveToken()">💾 保存 Token（只存在你的瀏覽器）</button>
+</div>
 
-<p>gifts.json內容：</p>
-<textarea id="editor"></textarea>
+<div class="card">
+  <h3>📦 已設定的禮物</h3>
+  <div id="giftList">讀取中...</div>
+</div>
 
-<button onclick="upload()">💾 儲存到 GitHub</button>
+<div class="card">
+  <h3>➕ 新增禮物</h3>
+  <label>日期（1–31）</label>
+  <input id="newDay" type="number" min="1" max="31">
+
+  <label>內容</label>
+  <textarea id="newText" rows="3"></textarea>
+
+  <button onclick="addGift()">新增</button>
+</div>
+
+<div style="text-align:center;">
+  <button onclick="upload()" style="padding:12px 20px;font-size:16px;">💾 儲存整份 gifts.json</button>
+</div>
 
 <div id="msg"></div>
 
 <script>
-const USER = "heyyouuuuu";
-const REPO = "calendar12";
-const FILE_PATH = "gifts.json";
+const USER="heyyouuuuu";
+const REPO="calendar12";
+const FILE_PATH="gifts.json";
 
-let token = localStorage.getItem("gh_token");
+let gifts = {};
+let token = null;
 
-document.getElementById("tokenInput").value = token || "";
-
-// 儲存 Token
+/* ---------------------------
+   Token Base64 加密存 localStorage
+----------------------------*/
 function saveToken(){
-  const v = document.getElementById("tokenInput").value.trim();
-  if(!v){ alert("Token 不可為空"); return; }
-  localStorage.setItem("gh_token", v);
-  token = v;
+  const raw = document.getElementById("tokenBox").value.trim();
+  if(!raw){ alert("Token 不可為空"); return; }
+  const encoded = btoa(raw);
+  localStorage.setItem("token_enc", encoded);
+  token = raw;
   alert("Token 已保存！");
 }
 
-// STEP 1：讀取現有 gifts.json
-async function loadFile(){
+function loadToken(){
+  const enc = localStorage.getItem("token_enc");
+  if(enc){
+    token = atob(enc);
+    document.getElementById("tokenBox").value = token;
+  }
+}
+loadToken();
+
+/* ---------------------------
+        載入 gifts.json
+----------------------------*/
+async function loadGifts(){
   const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`;
   const res = await fetch(url);
   const data = await res.json();
-  const content = atob(data.content);
-  document.getElementById("editor").value = content;
+  const content = decodeURIComponent(escape(atob(data.content)));
+  gifts = JSON.parse(content);
+  renderList();
 }
-loadFile();
+loadGifts();
 
-// STEP 2：寫回 GitHub
+/* ---------------------------
+        顯示禮物清單（可編輯）
+----------------------------*/
+function renderList(){
+  const box = document.getElementById("giftList");
+  box.innerHTML = "";
+
+  Object.keys(gifts).sort((a,b)=>a-b).forEach(day=>{
+    const div = document.createElement("div");
+    div.className="gift-item";
+    
+    div.innerHTML = `
+      <label>日期</label>
+      <input type="number" min="1" max="31" value="${day}" 
+             onchange="updateDay(${day}, this.value)">
+      <label>內容</label>
+      <textarea rows="2" onchange="updateGift(${day}, this.value)">${gifts[day]}</textarea>
+      <button class="btn-small btn-delete" onclick="removeGift(${day})">刪除</button>
+    `;
+    box.appendChild(div);
+  });
+}
+
+/* ---------------------------
+       編輯功能
+----------------------------*/
+function updateDay(oldDay, newDay){
+  newDay = parseInt(newDay);
+  if(!newDay || newDay<1 || newDay>31){
+    alert("日期需在 1–31！");
+    renderList();
+    return;
+  }
+  gifts[newDay] = gifts[oldDay];
+  delete gifts[oldDay];
+  renderList();
+}
+
+function updateGift(day, text){
+  gifts[day] = text;
+}
+
+function removeGift(day){
+  delete gifts[day];
+  renderList();
+}
+
+/* 新增禮物 */
+function addGift(){
+  const d = parseInt(document.getElementById("newDay").value);
+  const t = document.getElementById("newText").value.trim();
+  if(!d || d<1 || d>31){ alert("日期需 1–31"); return; }
+  if(!t){ alert("內容不可空"); return; }
+
+  gifts[d] = t;
+  document.getElementById("newDay").value = "";
+  document.getElementById("newText").value = "";
+
+  renderList();
+}
+
+/* ---------------------------
+       上傳至 GitHub
+----------------------------*/
 async function upload(){
+
   if(!token){
-    alert("請先輸入並儲存 Token");
+    alert("請先輸入 Token");
     return;
   }
 
-  const newContent = document.getElementById("editor").value;
-
-  // 先取最新 SHA
   const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`;
+
+  // 取得最新 SHA
   const fileInfo = await fetch(url).then(r=>r.json());
+
+  const newContent = JSON.stringify(gifts, null, 2);
 
   const body = {
     message: "update gifts.json",
@@ -117,7 +250,7 @@ async function upload(){
   if(res.ok){
     document.getElementById("msg").innerHTML = "✔ 已成功更新！";
   }else{
-    document.getElementById("msg").innerHTML = "❌ 發生錯誤，請檢查 Token 或權限。";
+    document.getElementById("msg").innerHTML = "❌ 失敗，請檢查 Token";
   }
 }
 </script>
